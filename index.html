@@ -126,10 +126,24 @@ button {
   <h2>Compensação de Horário</h2>
 
   <label>Hora de entrada</label>
-  <input type="text" id="entrada" placeholder="HH:MM" maxlength="5">
+  <input
+  type="text"
+  id="entrada"
+  placeholder="HH:MM"
+  maxlength="5"
+  inputmode="numeric"
+  pattern="[0-9]*"
+/>
 
   <label>Banco de horas</label>
-  <input type="text" id="banco" placeholder="HH:MM" maxlength="5">
+  <input
+  type="text"
+  id="banco"
+  placeholder="HH:MM"
+  maxlength="5"
+  inputmode="numeric"
+  pattern="[0-9]*"
+/>
 
   <button id="btnAcao" onclick="acaoBotao()">Calcular</button>
 
