@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Compensação de Horário</title>
+
+<style>
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+  background: url("bg-ponto.jpg") center / cover no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: -1;
+}
+
+.container {
+  width: calc(100% - 32px);
+  max-width: 520px;
+  background: rgba(255,255,255,0.95);
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+label {
+  display: block;
+  margin-top: 14px;
+  font-size: 14px;
+}
+
+input {
+  width: 100%;
+  max-width: 240px;
+  padding: 6px 8px;
+  font-size: 14px;
+  margin: 6px auto;
+  display: block;
+}
+
+button {
+  width: 100%;
+  max-width: 260px;
+  padding: 8px;
+  font-size: 15px;
+  margin: 16px auto;
+  cursor: pointer;
+  display: block;
+}
+
+.resultado {
+  margin-top: 20px;
+  display: none;
+}
+
+.cards {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.card {
+  flex: 1;
+  min-width: 220px;
+  border: 1px solid #ccc;
+  padding: 12px;
+  border-radius: 6px;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: surgir .4s ease forwards;
+}
+
+@keyframes surgir {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.positivo {
+  border-color: #0a8a0a;
+  color: #0a8a0a;
+}
+
+.negativo {
+  border-color: #c00000;
+  color: #c00000;
+}
+
+.destaque {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+footer {
+  position: fixed;
+  bottom: 8px;
+  width: 100%;
+  text-align: center;
+  font-size: 12px;
+  color: #fff;
+  opacity: .7;
+}
+button {
+  transition: background .3s, color .3s;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>Compensação de Horário</h2>
+
+  <label>Hora de entrada</label>
+  <input type="text" id="entrada" placeholder="HH:MM" maxlength="5">
+
+  <label>Banco de horas</label>
+  <input type="text" id="banco" placeholder="HH:MM" maxlength="5">
+
+  <button id="btnAcao" onclick="acaoBotao()">Calcular</button>
+
+
+  <div class="resultado" id="resultado">
+
+    <div>
+      Entrada padrão: <b id="entradaPadrao"></b><br>
+      Saída normal: <b id="saidaNormal"></b>
+    </div>
+
+    <div class="cards">
+
+      <div class="card positivo" id="cardPositivo">
+        <h4>✔ Horas positivas</h4>
+        Sair mais cedo:<br>
+        <span class="destaque" id="sairCedo"></span><br><br>
+        Entrar mais tarde:<br>
+        <span class="destaque" id="entrarTarde"></span>
+      </div>
+
+      <div class="card negativo" id="cardNegativo">
+        <h4>✖ Horas negativas</h4>
+        Sair mais tarde:<br>
+        <span class="destaque" id="sairTarde"></span><br><br>
+        Entrar mais cedo:<br>
+        <span class="destaque" id="entrarCedo"></span>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<footer>
+  Desenvolvido por <b>Carlos Nolacio</b>
+</footer>
+
+<script>
+let calculado = false;
+const campos = ["entrada", "banco"];
+
+campos.forEach((id, index) => {
+  document.getElementById(id).addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const prox = campos[index + 1];
+      prox ? document.getElementById(prox).focus() : acaoBotao();
+    }
+  });
+});
+
+function paraMinutos(h) {
+  let [hh, mm] = h.split(":").map(Number);
+  return hh * 60 + mm;
+}
+
+function formatar(min) {
+  if (min < 0 || min >= 1440) return "--:--";
+  let h = Math.floor(min / 60);
+  let m = min % 60;
+  return String(h).padStart(2, "0") + ":" + String(m).padStart(2, "0");
+}
+
+function calcular() {
+  const entrada = document.getElementById("entrada").value;
+  const banco = document.getElementById("banco").value;
+
+  if (!entrada || !banco) {
+    alert("Preencha todos os campos");
+    return;
+  }
+
+  if (banco === "00:00") {
+    document.getElementById("resultado").style.display = "none";
+    return;
+  }
+
+  const entradaMin = paraMinutos(entrada);
+  const bancoMin = paraMinutos(banco);
+  const jornada = 8 * 60 + 20;
+  const saidaNormal = entradaMin + jornada;
+
+  document.getElementById("entradaPadrao").innerText = formatar(entradaMin);
+  document.getElementById("saidaNormal").innerText = formatar(saidaNormal);
+
+  document.getElementById("sairCedo").innerText = formatar(saidaNormal - bancoMin);
+  document.getElementById("entrarTarde").innerText = formatar(entradaMin + bancoMin);
+  document.getElementById("sairTarde").innerText = formatar(saidaNormal + bancoMin);
+  document.getElementById("entrarCedo").innerText = formatar(entradaMin - bancoMin);
+
+  document.getElementById("resultado").style.display = "block";
+  
+  const btn = document.getElementById("btnAcao");
+btn.innerText = "Limpar";
+btn.style.background = "#c00000"; // 🔴 AQUI
+
+calculado = true;
+
+
+}
+</script>
+<script>
+function mascaraHora(campo) {
+  campo.addEventListener("input", () => {
+    let v = campo.value.replace(/\D/g, "");
+
+    if (v.length >= 3) {
+      v = v.slice(0, 2) + ":" + v.slice(2, 4);
+    }
+
+    campo.value = v;
+  });
+
+  campo.addEventListener("blur", () => {
+    if (!/^\d{2}:\d{2}$/.test(campo.value)) {
+      campo.value = "00:00";
+    }
+  });
+}
+
+mascaraHora(document.getElementById("entrada"));
+mascaraHora(document.getElementById("banco"));
+</script>
+ <script>
+
+
+function acaoBotao() {
+  if (!calculado) {
+    calcular();
+  } else {
+    limpar();
+  }
+}
+
+function limpar() {
+  document.activeElement.blur(); // evita disparar blur depois
+
+  document.getElementById("entrada").value = "";
+  document.getElementById("banco").value = "";
+
+  document.getElementById("resultado").style.display = "none";
+
+  const btn = document.getElementById("btnAcao");
+  btn.innerText = "Calcular";
+  btn.style.background = "";
+  btn.style.color = "";
+
+  calculado = false;
+
+  document.getElementById("entrada").focus();
+}
+
+</script>
+
+
+</body>
+</html>
