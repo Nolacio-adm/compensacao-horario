@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Compensação de Horário</title>
+<title>⏰Compensação de Horário</title>
 
 <style>
 body {
@@ -24,140 +24,179 @@ body::before {
   z-index: -1;
 }
 
+/* 🔥 CONTAINER MAIS COMPACTO */
 .container {
-  width: calc(100% - 32px);
-  max-width: 520px;
-  background: rgba(255,255,255,0.95);
-  padding: 20px;
-  border-radius: 8px;
+  width: 94%;
+  max-width: 360px;
+  background: rgba(255,255,255,0.97);
+  padding: 12px;
+  border-radius: 16px;
   text-align: center;
+  margin: auto;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+/* 🔥 TÍTULO MENOR */
+h2 {
+  margin: 4px 0 10px 0;
+  font-size: 18px;
 }
 
 label {
   display: block;
-  margin-top: 14px;
-  font-size: 14px;
+  margin-top: 6px;
+  font-size: 12px;
 }
 
 input {
-  width: 100%;
-  max-width: 240px;
-  padding: 6px 8px;
-  font-size: 14px;
-  margin: 6px auto;
+  width: 70%;
+  max-width: 220px;
+  padding: 8px;
+  font-size: 15px;
+  margin: 4px auto;
   display: block;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  text-align: center;      /* deixa visual mais bonito */
 }
 
 button {
-  width: 100%;
-  max-width: 260px;
-  padding: 8px;
-  font-size: 15px;
-  margin: 16px auto;
+  width: 65%; /* 👈 controla largura */
+  max-width: 100%;
+  padding: 9px;
+  font-size: 14px;
+  margin: 6px auto;
   cursor: pointer;
   display: block;
+  transition: .3s;
+  border-radius: 10px;
+}
+
+button:active {
+  transform: scale(0.98);
 }
 
 .resultado {
-  margin-top: 20px;
+  margin-top: 10px;
   display: none;
 }
 
+/* 🔥 CARDS */
 .cards {
   display: flex;
-  gap: 12px;
-  margin-top: 16px;
-  justify-content: space-between;
-  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
 }
 
 .card {
   flex: 1;
-  min-width: 220px;
-  border: 1px solid #ccc;
-  padding: 12px;
-  border-radius: 6px;
-  opacity: 0;
-  transform: translateY(10px);
-  animation: surgir .4s ease forwards;
+  min-width: 0;
+  padding: 8px;
+  border-radius: 14px;
+  line-height: 1.25;
+  font-size: 15px;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transition: transform .2s ease, box-shadow .2s ease;
 }
 
-@keyframes surgir {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
 }
 
+.card h4 {
+  margin: 0 0 6px 0;
+  font-size: 13px;
+}
+
+/* 🔥 CORES PROFISSIONAIS */
 .positivo {
-  border-color: #0a8a0a;
+  background: linear-gradient(135deg, #e9f9ee, #ffffff);
+  border: 1px solid #0a8a0a33;
   color: #0a8a0a;
 }
 
 .negativo {
-  border-color: #c00000;
+  background: linear-gradient(135deg, #fdecec, #ffffff);
+  border: 1px solid #c0000033;
   color: #c00000;
 }
 
 .destaque {
-  font-size: 18px;
   font-weight: bold;
 }
 
 footer {
   position: fixed;
-  bottom: 8px;
+  bottom: 6px;
   width: 100%;
   text-align: center;
-  font-size: 12px;
+  font-size: 11px;
   color: #fff;
   opacity: .7;
 }
-button {
-  transition: background .3s, color .3s;
-}
 
+/* 📱 MOBILE */
+@media (max-width: 420px) {
+
+  .container {
+    max-width: 340px;
+    padding: 10px;
+  }
+
+  .cards {
+    flex-direction: column;
+  }
+
+    input {
+    width: 85%;
+    font-size: 16px;
+    padding: 10px;
+  }
+
+  button {
+    font-size: 16px;
+    padding: 12px;
+  }
+}
 </style>
+
 </head>
 
 <body>
 
 <div class="container">
-  <h2>Compensação de Horário</h2>
+  <h2>Compensação de Horário 🕑</h2>
 
   <label>Hora de entrada</label>
-  <input
-  type="text"
-  id="entrada"
-  placeholder="HH:MM"
-  maxlength="5"
-  inputmode="numeric"
-  pattern="[0-9]*"
-/>
+  <input type="tel" id="entrada" placeholder="HH:MM" maxlength="5" inputmode="numeric" pattern="[0-9]"autocomplete="off"/>
+  
 
   <label>Banco de horas</label>
-  <input
-  type="text"
-  id="banco"
-  placeholder="HH:MM"
-  maxlength="5"
-  inputmode="numeric"
-  pattern="[0-9]*"
-/>
+  <input type="tel" id="banco" placeholder="HH:MM" maxlength="5" inputmode="numeric" pattern="[0-9]*" autocomplete="off"/>
+  
 
-  <button id="btnAcao" onclick="acaoBotao()">Calcular</button>
+  <button onclick="alternarEscala()" id="btnEscala">
+    Modo: Escala Geral
+  </button>
 
+  <button id="btnAcao" onclick="acaoBotao()">
+    Calcular
+  </button>
 
   <div class="resultado" id="resultado">
 
     <div>
       Entrada padrão: <b id="entradaPadrao"></b><br>
-      Saída normal: <b id="saidaNormal"></b>
+      Saída: <b id="saidaNormal"></b>
     </div>
+
+    <h3 id="modoTitulo" style="margin:5px 0;"></h3>
 
     <div class="cards">
 
-      <div class="card positivo" id="cardPositivo">
+      <div class="card positivo">
         <h4>✔ Horas positivas</h4>
         Sair mais cedo:<br>
         <span class="destaque" id="sairCedo"></span><br><br>
@@ -165,7 +204,7 @@ button {
         <span class="destaque" id="entrarTarde"></span>
       </div>
 
-      <div class="card negativo" id="cardNegativo">
+      <div class="card negativo">
         <h4>✖ Horas negativas</h4>
         Sair mais tarde:<br>
         <span class="destaque" id="sairTarde"></span><br><br>
@@ -182,18 +221,10 @@ button {
 </footer>
 
 <script>
-let calculado = false;
-const campos = ["entrada", "banco"];
 
-campos.forEach((id, index) => {
-  document.getElementById(id).addEventListener("keydown", e => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      const prox = campos[index + 1];
-      prox ? document.getElementById(prox).focus() : acaoBotao();
-    }
-  });
-});
+let modoEscala = "geral";
+let calculado = false;
+let ultimoCalculo = null;
 
 function paraMinutos(h) {
   let [hh, mm] = h.split(":").map(Number);
@@ -201,13 +232,14 @@ function paraMinutos(h) {
 }
 
 function formatar(min) {
-  if (min < 0 || min >= 1440) return "--:--";
+  min = ((min % 1440) + 1440) % 1440;
   let h = Math.floor(min / 60);
   let m = min % 60;
   return String(h).padStart(2, "0") + ":" + String(m).padStart(2, "0");
 }
 
 function calcular() {
+
   const entrada = document.getElementById("entrada").value;
   const banco = document.getElementById("banco").value;
 
@@ -216,59 +248,111 @@ function calcular() {
     return;
   }
 
-  if (banco === "00:00") {
-    document.getElementById("resultado").style.display = "none";
-    return;
-  }
-
   const entradaMin = paraMinutos(entrada);
   const bancoMin = paraMinutos(banco);
-  const jornada = 8 * 60 + 20;
-  const saidaNormal = entradaMin + jornada;
+
+  ultimoCalculo = { entradaMin, bancoMin };
 
   document.getElementById("entradaPadrao").innerText = formatar(entradaMin);
-  document.getElementById("saidaNormal").innerText = formatar(saidaNormal);
 
-  document.getElementById("sairCedo").innerText = formatar(saidaNormal - bancoMin);
-  document.getElementById("entrarTarde").innerText = formatar(entradaMin + bancoMin);
-  document.getElementById("sairTarde").innerText = formatar(saidaNormal + bancoMin);
-  document.getElementById("entrarCedo").innerText = formatar(entradaMin - bancoMin);
+  if (modoEscala === "geral") {
+
+    document.getElementById("modoTitulo").innerText =
+      "📅 ESCALA NORMAL";
+
+    const escala = {
+      "06:00": "14:20",
+      "06:30": "14:50",
+      "07:00": "15:20",
+      "07:30": "15:50",
+      "08:00": "16:20",
+      "09:00": "17:20",
+      "10:00": "18:20",
+      "11:00": "19:20",
+      "12:00": "20:20",
+      "13:00": "21:20",
+      "14:00": "22:20"
+    };
+
+    if (!escala[entrada]) {
+      alert("Horário não está na escala geral.");
+      return;
+    }
+
+    const saidaNormal = paraMinutos(escala[entrada]);
+
+    document.getElementById("saidaNormal").innerText =
+      formatar(saidaNormal);
+
+    document.getElementById("sairCedo").innerText =
+      formatar(saidaNormal - bancoMin);
+
+    document.getElementById("entrarTarde").innerText =
+      formatar(entradaMin + bancoMin);
+
+    document.getElementById("sairTarde").innerText =
+      formatar(saidaNormal + bancoMin);
+
+    document.getElementById("entrarCedo").innerText =
+      formatar(entradaMin - bancoMin);
+
+  } else {
+
+    document.getElementById("modoTitulo").innerText =
+      "🗂️ MODO ADMINISTRATIVO";
+
+    const saidaSemana = entradaMin + (9 * 60);
+    const saidaSabado = entradaMin + (4 * 60);
+
+    document.getElementById("saidaNormal").innerHTML =
+      "Seg–Sex: <b>" + formatar(saidaSemana) +
+      "</b><br>Sábado: <b>" + formatar(saidaSabado) + "</b>";
+
+    document.getElementById("sairCedo").innerHTML =
+      "Seg–Sex: " + formatar(saidaSemana - bancoMin) +
+      "<br>Sábado: " + formatar(saidaSabado - bancoMin);
+
+    document.getElementById("entrarTarde").innerHTML =
+      formatar(entradaMin + bancoMin);
+
+    document.getElementById("sairTarde").innerHTML =
+      "Seg–Sex: " + formatar(saidaSemana + bancoMin) +
+      "<br>Sábado: " + formatar(saidaSabado + bancoMin);
+
+    document.getElementById("entrarCedo").innerHTML =
+      formatar(entradaMin - bancoMin);
+  }
 
   document.getElementById("resultado").style.display = "block";
-  
+
   const btn = document.getElementById("btnAcao");
-btn.innerText = "Limpar";
-btn.style.background = "#c00000"; // 🔴 AQUI
+  btn.innerText = "Limpar";
+  btn.style.background = "#c00000";
+  btn.style.color = "#fff";
 
-calculado = true;
-
-
-}
-</script>
-<script>
-function mascaraHora(campo) {
-  campo.addEventListener("input", () => {
-    let v = campo.value.replace(/\D/g, "");
-
-    if (v.length >= 3) {
-      v = v.slice(0, 2) + ":" + v.slice(2, 4);
-    }
-
-    campo.value = v;
-  });
-
-  campo.addEventListener("blur", () => {
-    if (!/^\d{2}:\d{2}$/.test(campo.value)) {
-      campo.value = "00:00";
-    }
-  });
+  calculado = true;
 }
 
-mascaraHora(document.getElementById("entrada"));
-mascaraHora(document.getElementById("banco"));
-</script>
- <script>
+function alternarEscala() {
 
+  const btn = document.getElementById("btnEscala");
+
+  if (modoEscala === "geral") {
+    modoEscala = "administrativo";
+    btn.innerText = "Modo: Administrativo";
+    btn.style.background = "#005bbb";
+    btn.style.color = "#fff";
+  } else {
+    modoEscala = "geral";
+    btn.innerText = "Modo: Escala Geral";
+    btn.style.background = "";
+    btn.style.color = "";
+  }
+
+  if (ultimoCalculo) {
+    calcular();
+  }
+}
 
 function acaoBotao() {
   if (!calculado) {
@@ -279,11 +363,8 @@ function acaoBotao() {
 }
 
 function limpar() {
-  document.activeElement.blur(); // evita disparar blur depois
-
   document.getElementById("entrada").value = "";
   document.getElementById("banco").value = "";
-
   document.getElementById("resultado").style.display = "none";
 
   const btn = document.getElementById("btnAcao");
@@ -292,10 +373,43 @@ function limpar() {
   btn.style.color = "";
 
   calculado = false;
-
-  document.getElementById("entrada").focus();
+  ultimoCalculo = null;
 }
 
+</script>
+<script>
+function mascaraHora(campo) {
+  campo.addEventListener("input", () => {
+    let v = campo.value.replace(/\D/g, "").slice(0,4);
+
+    if (v.length >= 3) {
+      campo.value = v.slice(0,2) + ":" + v.slice(2);
+    } else {
+      campo.value = v;
+    }
+  });
+}
+
+mascaraHora(document.getElementById("entrada"));
+mascaraHora(document.getElementById("banco"));
+</script>
+
+<script>
+const campos = ["entrada", "banco"];
+
+campos.forEach((id, index) => {
+  document.getElementById(id).addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const prox = campos[index + 1];
+      if (prox) {
+        document.getElementById(prox).focus();
+      } else {
+        acaoBotao();
+      }
+    }
+  });
+});
 </script>
 
 
