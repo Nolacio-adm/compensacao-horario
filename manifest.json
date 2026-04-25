@@ -1,11 +1,10 @@
 {
   "name": "Compensação de Horário",
-  "short_name": "Horas",
-  "start_url": ".",
+  "short_name": "Ponto",
+  "start_url": "/",
   "display": "standalone",
-  "background_color": "#000000",
+  "background_color": "#ffffff",
   "theme_color": "#005bbb",
-  "orientation": "portrait",
   "icons": [
     {
       "src": "icon-192.png",
