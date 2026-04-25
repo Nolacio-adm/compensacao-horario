@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#005bbb">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>⏰Compensação de Horário</title>
@@ -136,6 +138,51 @@ footer {
   color: #fff;
   opacity: .7;
 }
+.toggle-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+.switch {
+  position: relative;
+  width: 50px;
+  height: 26px;
+}
+
+.switch input {
+  display: none;
+}
+
+.slider {
+  position: absolute;
+  inset: 0;
+  background: #ccc;
+  border-radius: 50px;
+  transition: .3s;
+}
+
+.slider::before {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  left: 3px;
+  top: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: .3s;
+}
+
+.switch input:checked + .slider {
+  background: #005bbb;
+}
+
+.switch input:checked + .slider::before {
+  transform: translateX(24px);
+}
 
 /* 📱 MOBILE */
 @media (max-width: 420px) {
@@ -158,7 +205,7 @@ footer {
   button {
     font-size: 16px;
     padding: 12px;
-  }
+  }	
 }
 </style>
 
@@ -180,6 +227,14 @@ footer {
   <button onclick="alternarEscala()" id="btnEscala">
     Modo: Escala Geral
   </button>
+  <div class="toggle-box" id="boxSabado" style="display:none;">
+  <span>Trabalha aos sábados?</span>
+
+  <label class="switch">
+    <input type="checkbox" id="toggleSabado">
+    <span class="slider"></span>
+  </label>
+</div>
 
   <button id="btnAcao" onclick="acaoBotao()">
     Calcular
@@ -221,164 +276,206 @@ footer {
 </footer>
 
 <script>
+// =============================
+// 🔹 CONFIGURAÇÕES
+// =============================
+const ESCALA_GERAL = {
+  "06:00": "14:20",
+  "06:30": "14:50",
+  "07:00": "15:20",
+  "07:30": "15:50",
+  "08:00": "16:20",
+  "09:00": "17:20",
+  "10:00": "18:20",
+  "11:00": "19:20",
+  "12:00": "20:20",
+  "13:00": "21:20",
+  "13:30": "21:50",
+  "14:00": "22:20",
+  "15:00": "23:10",
+  "16:00": "00:04",
+  "17:00": "00:56",
+  "18:00": "01:48",
+  "19:00": "02:40",
+  "20:00": "03:33",
+  "21:00": "04:27",
+  "22:00": "05:26",
+  "23:00": "06:35",
+};
 
-let modoEscala = "geral";
-let calculado = false;
-let ultimoCalculo = null;
+// =============================
+// 🔹 ESTADO
+// =============================
+let estado = {
+  modo: "geral",
+  calculado: false,
+  ultimo: null,
+  trabalhaSabado: false
+};
 
-function paraMinutos(h) {
-  let [hh, mm] = h.split(":").map(Number);
+// =============================
+// 🔹 ELEMENTOS (cache)
+// =============================
+const el = {
+  entrada: document.getElementById("entrada"),
+  banco: document.getElementById("banco"),
+  resultado: document.getElementById("resultado"),
+  btnAcao: document.getElementById("btnAcao"),
+  btnEscala: document.getElementById("btnEscala"),
+
+  entradaPadrao: document.getElementById("entradaPadrao"),
+  saidaNormal: document.getElementById("saidaNormal"),
+  modoTitulo: document.getElementById("modoTitulo"),
+
+  sairCedo: document.getElementById("sairCedo"),
+  entrarTarde: document.getElementById("entrarTarde"),
+  sairTarde: document.getElementById("sairTarde"),
+  entrarCedo: document.getElementById("entrarCedo"),
+};
+document.addEventListener("DOMContentLoaded", () => {
+  const toggle = document.getElementById("toggleSabado");
+
+  toggle.addEventListener("change", (e) => {
+    estado.trabalhaSabado = e.target.checked;
+
+    if (estado.ultimo) {
+      calcular();
+    }
+  });
+});
+
+// =============================
+// 🔹 UTILIDADES
+// =============================
+const toMin = (h) => {
+  const [hh, mm] = h.split(":").map(Number);
   return hh * 60 + mm;
-}
+};
 
-function formatar(min) {
+const format = (min) => {
   min = ((min % 1440) + 1440) % 1440;
-  let h = Math.floor(min / 60);
-  let m = min % 60;
-  return String(h).padStart(2, "0") + ":" + String(m).padStart(2, "0");
-}
+  return String(Math.floor(min / 60)).padStart(2, "0") +
+         ":" +
+         String(min % 60).padStart(2, "0");
+};
 
+// =============================
+// 🔹 LÓGICA PRINCIPAL
+// =============================
 function calcular() {
-
-  const entrada = document.getElementById("entrada").value;
-  const banco = document.getElementById("banco").value;
+  const entrada = el.entrada.value;
+  const banco = el.banco.value;
 
   if (!entrada || !banco) {
     alert("Preencha todos os campos");
     return;
   }
 
-  const entradaMin = paraMinutos(entrada);
-  const bancoMin = paraMinutos(banco);
+  const entradaMin = toMin(entrada);
+  const bancoMin = toMin(banco);
 
-  ultimoCalculo = { entradaMin, bancoMin };
+  estado.ultimo = { entradaMin, bancoMin };
 
-  document.getElementById("entradaPadrao").innerText = formatar(entradaMin);
+  el.entradaPadrao.innerText = format(entradaMin);
 
-  if (modoEscala === "geral") {
-
-    document.getElementById("modoTitulo").innerText =
-      "📅 ESCALA NORMAL";
-
-    const escala = {
-      "06:00": "14:20",
-      "06:30": "14:50",
-      "07:00": "15:20",
-      "07:30": "15:50",
-      "08:00": "16:20",
-      "09:00": "17:20",
-      "10:00": "18:20",
-      "11:00": "19:20",
-      "12:00": "20:20",
-      "13:00": "21:20",
-      "14:00": "22:20",
-      "15:00": "23:10",
-	    "16:00": "00:04",
-	    "17:00": "00:56"
-    };
-
-    if (!escala[entrada]) {
-      alert("Horário não está na escala geral.");
-      return;
-    }
-
-    const saidaNormal = paraMinutos(escala[entrada]);
-
-    document.getElementById("saidaNormal").innerText =
-      formatar(saidaNormal);
-
-    document.getElementById("sairCedo").innerText =
-      formatar(saidaNormal - bancoMin);
-
-    document.getElementById("entrarTarde").innerText =
-      formatar(entradaMin + bancoMin);
-
-    document.getElementById("sairTarde").innerText =
-      formatar(saidaNormal + bancoMin);
-
-    document.getElementById("entrarCedo").innerText =
-      formatar(entradaMin - bancoMin);
-
+  if (estado.modo === "geral") {
+    calcularGeral(entrada, entradaMin, bancoMin);
   } else {
-
-    document.getElementById("modoTitulo").innerText =
-      "🗂️ MODO ADMINISTRATIVO";
-
-    const saidaSemana = entradaMin + (9 * 60);
-    const saidaSabado = entradaMin + (4 * 60);
-
-    document.getElementById("saidaNormal").innerHTML =
-      "Seg–Sex: <b>" + formatar(saidaSemana) +
-      "</b><br>Sábado: <b>" + formatar(saidaSabado) + "</b>";
-
-    document.getElementById("sairCedo").innerHTML =
-      "Seg–Sex: " + formatar(saidaSemana - bancoMin) +
-      "<br>Sábado: " + formatar(saidaSabado - bancoMin);
-
-    document.getElementById("entrarTarde").innerHTML =
-      formatar(entradaMin + bancoMin);
-
-    document.getElementById("sairTarde").innerHTML =
-      "Seg–Sex: " + formatar(saidaSemana + bancoMin) +
-      "<br>Sábado: " + formatar(saidaSabado + bancoMin);
-
-    document.getElementById("entrarCedo").innerHTML =
-      formatar(entradaMin - bancoMin);
+    calcularAdm(entradaMin, bancoMin);
   }
 
-  document.getElementById("resultado").style.display = "block";
-
-  const btn = document.getElementById("btnAcao");
-  btn.innerText = "Limpar";
-  btn.style.background = "#c00000";
-  btn.style.color = "#fff";
-
-  calculado = true;
+  mostrarResultado();
 }
 
-function alternarEscala() {
+// =============================
+// 🔹 MODOS
+// =============================
+function calcularGeral(entrada, entradaMin, bancoMin) {
+  el.modoTitulo.innerText = "📅 ESCALA NORMAL";
 
-  const btn = document.getElementById("btnEscala");
-
-  if (modoEscala === "geral") {
-    modoEscala = "administrativo";
-    btn.innerText = "Modo: Administrativo";
-    btn.style.background = "#005bbb";
-    btn.style.color = "#fff";
-  } else {
-    modoEscala = "geral";
-    btn.innerText = "Modo: Escala Geral";
-    btn.style.background = "";
-    btn.style.color = "";
+  if (!ESCALA_GERAL[entrada]) {
+    alert("Horário não está na escala geral.");
+    return;
   }
 
-  if (ultimoCalculo) {
-    calcular();
-  }
+  const saida = toMin(ESCALA_GERAL[entrada]);
+
+  el.saidaNormal.innerText = format(saida);
+
+  el.sairCedo.innerText = format(saida - bancoMin);
+  el.entrarTarde.innerText = format(entradaMin + bancoMin);
+  el.sairTarde.innerText = format(saida + bancoMin);
+  el.entrarCedo.innerText = format(entradaMin - bancoMin);
 }
 
-function acaoBotao() {
-  if (!calculado) {
-    calcular();
+function calcularAdm(entradaMin, bancoMin) {
+  el.modoTitulo.innerText = "🗂️ MODO ADMINISTRATIVO";
+
+  let carga;
+
+  if (estado.trabalhaSabado) {
+    // trabalha sábado → 8h por dia
+    carga = 9 * 60;
+    el.modoTitulo.innerText += " \n Seg–Sáb (9h)";
   } else {
-    limpar();
+    // NÃO trabalha sábado → 10h por dia
+    carga = 10 * 60;
+    el.modoTitulo.innerText += " \n Seg–Sex (10h)";
   }
+
+  const saida = entradaMin + carga;
+
+  el.saidaNormal.innerHTML = `<b>${format(saida)}</b>`;
+
+  el.sairCedo.innerText = format(saida - bancoMin);
+  el.entrarTarde.innerText = format(entradaMin + bancoMin);
+  el.sairTarde.innerText = format(saida + bancoMin);
+  el.entrarCedo.innerText = format(entradaMin - bancoMin);
+}
+
+// =============================
+// 🔹 UI
+// =============================
+function mostrarResultado() {
+  el.resultado.style.display = "block";
+
+  el.btnAcao.innerText = "Limpar";
+  el.btnAcao.style.background = "#c00000";
+  el.btnAcao.style.color = "#fff";
+
+  estado.calculado = true;
 }
 
 function limpar() {
-  document.getElementById("entrada").value = "";
-  document.getElementById("banco").value = "";
-  document.getElementById("resultado").style.display = "none";
+  el.entrada.value = "";
+  el.banco.value = "";
+  el.resultado.style.display = "none";
 
-  const btn = document.getElementById("btnAcao");
-  btn.innerText = "Calcular";
-  btn.style.background = "";
-  btn.style.color = "";
+  el.btnAcao.innerText = "Calcular";
+  el.btnAcao.style = "";
 
-  calculado = false;
-  ultimoCalculo = null;
+  estado.calculado = false;
+  estado.ultimo = null;
 }
 
+function alternarEscala() {
+  estado.modo = estado.modo === "geral" ? "administrativo" : "geral";
+
+  el.btnEscala.innerText =
+    estado.modo === "geral"
+      ? "Modo: Escala Geral"
+      : "Modo: Administrativo";
+
+  // 👇 MOSTRA OU ESCONDE O TOGGLE
+  document.getElementById("boxSabado").style.display =
+    estado.modo === "administrativo" ? "flex" : "none";
+
+  if (estado.ultimo) calcular();
+}
+
+function acaoBotao() {
+  estado.calculado ? limpar() : calcular();
+}
 </script>
 <script>
 function mascaraHora(campo) {
@@ -415,6 +512,10 @@ campos.forEach((id, index) => {
 });
 </script>
 
-
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("service-worker.js");
+}
+</script>
 </body>
 </html>
