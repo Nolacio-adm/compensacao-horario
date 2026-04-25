@@ -239,6 +239,9 @@ footer {
   <button id="btnAcao" onclick="acaoBotao()">
     Calcular
   </button>
+  <button id="btnInstalar" style="display:none;">
+  📲 Instalar App
+</button>
 
   <div class="resultado" id="resultado">
 
@@ -476,6 +479,38 @@ function alternarEscala() {
 function acaoBotao() {
   estado.calculado ? limpar() : calcular();
 }
+
+// =============================
+// 🔹 instalar
+// =============================
+let deferredPrompt;
+
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+
+const btn = document.getElementById("btnInstalar");
+
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+
+  btn.style.display = "block";
+});
+
+btn.addEventListener("click", async () => {
+  if (!deferredPrompt) return;
+
+  btn.style.display = "none";
+
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+
+  console.log(outcome === "accepted" ? "Instalou 👍" : "Cancelou 😢");
+
+  deferredPrompt = null;
+});
+});
 </script>
 <script>
 function mascaraHora(campo) {
