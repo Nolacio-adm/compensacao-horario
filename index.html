@@ -484,33 +484,42 @@ function acaoBotao() {
 // 🔹 instalar
 // =============================
 let deferredPrompt;
-
-window.addEventListener("beforeinstallprompt", (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
+let podeInstalar = false;
 
 const btn = document.getElementById("btnInstalar");
 
+// Evento oficial (quando o navegador permite instalar)
 window.addEventListener("beforeinstallprompt", (e) => {
   e.preventDefault();
   deferredPrompt = e;
+  podeInstalar = true;
 
   btn.style.display = "block";
+  btn.innerText = "📲 Instalar App";
 });
 
+// Clique no botão
 btn.addEventListener("click", async () => {
-  if (!deferredPrompt) return;
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
 
-  btn.style.display = "none";
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log(outcome === "accepted" ? "Instalou 👍" : "Cancelou 😢");
 
-  deferredPrompt.prompt();
-  const { outcome } = await deferredPrompt.userChoice;
-
-  console.log(outcome === "accepted" ? "Instalou 👍" : "Cancelou 😢");
-
-  deferredPrompt = null;
+    deferredPrompt = null;
+  } else {
+    // fallback (quando não pode instalar direto)
+    alert("Toque nos 3 pontinhos do navegador e depois em 'Adicionar à tela inicial'");
+  }
 });
-});
+
+// Fallback automático (caso não dispare o evento)
+setTimeout(() => {
+  if (!podeInstalar) {
+    btn.style.display = "block";
+    btn.innerText = "📱 Como instalar";
+  }
+}, 3000);
 </script>
 <script>
 function mascaraHora(campo) {
