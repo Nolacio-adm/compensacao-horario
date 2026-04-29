@@ -207,6 +207,13 @@ footer {
     padding: 12px;
   }	
 }
+  #btnInstalar {
+  background-color: #25d366; /* Verde estilo WhatsApp */
+  color: white;
+  border: none;
+  font-weight: bold;
+  box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3);
+}
 </style>
 
 </head>
@@ -481,45 +488,50 @@ function acaoBotao() {
 }
 
 // =============================
-// 🔹 instalar
+// 🔹 LÓGICA DE INSTALAÇÃO (PWA)
 // =============================
 let deferredPrompt;
-let podeInstalar = false;
+const btnInstalar = document.getElementById("btnInstalar");
 
-const btn = document.getElementById("btnInstalar");
+// 1. Verifica se o app já está rodando em modo "standalone" (instalado)
+const estaInstalado = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 
-// Evento oficial (quando o navegador permite instalar)
-window.addEventListener("beforeinstallprompt", (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  podeInstalar = true;
+// 2. Só executa a lógica se NÃO estiver instalado
+if (!estaInstalado) {
+  // Captura o evento oficial de instalação (Android/Chrome)
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    
+    // Mostra o botão apenas quando o navegador confirmar que é possível instalar
+    btnInstalar.style.display = "block";
+  });
 
-  btn.style.display = "block";
-  btn.innerText = "📲 Instalar App";
-});
+  // Clique no botão
+  btnInstalar.addEventListener("click", async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      
+      if (outcome === "accepted") {
+        btnInstalar.style.display = "none";
+      }
+      deferredPrompt = null;
+    } else {
+      // Fallback para iOS ou navegadores que não disparam o evento
+      alert("Para instalar:\n1. Toque no ícone de compartilhar (ou nos 3 pontinhos)\n2. Selecione 'Adicionar à tela de início'");
+    }
+  });
 
-// Clique no botão
-btn.addEventListener("click", async () => {
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-
-    const { outcome } = await deferredPrompt.userChoice;
-    console.log(outcome === "accepted" ? "Instalou 👍" : "Cancelou 😢");
-
-    deferredPrompt = null;
-  } else {
-    // fallback (quando não pode instalar direto)
-    alert("Toque nos 3 pontinhos do navegador e depois em 'Adicionar à tela inicial'");
-  }
-});
-
-// Fallback automático (caso não dispare o evento)
-setTimeout(() => {
-  if (!podeInstalar) {
-    btn.style.display = "block";
-    btn.innerText = "📱 Como instalar";
-  }
-}, 3000);
+  // Fallback: Se após 5 segundos o evento não disparar (ex: iOS), 
+  // mostra o botão apenas como guia de ajuda
+  setTimeout(() => {
+    if (btnInstalar.style.display === "none") {
+      btnInstalar.style.display = "block";
+      btnInstalar.innerText = "📱 Como Instalar App";
+    }
+  }, 5000);
+}
 </script>
 <script>
 function mascaraHora(campo) {
